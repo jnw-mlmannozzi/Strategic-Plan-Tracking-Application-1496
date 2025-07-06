@@ -1,5 +1,5 @@
 {
-  "name": "jnw-strategic-planning",
+  "name": "strategypilot-multitenant",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -7,11 +7,10 @@
     "dev": "vite",
     "build": "npm run lint && vite build",
     "lint": "eslint .",
-    "lint:error": "eslint . --quiet", 
+    "lint:error": "eslint . --quiet",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@questlabs/react-sdk": "^2.1.9",
     "@supabase/supabase-js": "^2.39.0",
     "@stripe/stripe-js": "^2.4.0",
     "react": "^18.3.1",
@@ -22,9 +21,6 @@
     "echarts": "^5.5.0",
     "echarts-for-react": "^3.0.2",
     "date-fns": "4.1.0",
-    "react-csv": "^2.2.2",
-    "jspdf": "^2.5.1",
-    "html2canvas": "^1.4.1",
     "papaparse": "^5.4.1"
   },
   "devDependencies": {

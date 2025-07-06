@@ -8,7 +8,11 @@ const { FiMessageCircle, FiX, FiSend } = FiIcons
 const AIChat = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState([
-    { id: 1, text: "Hi! I'm here to help with your strategic planning questions. How can I assist you today?", sender: 'bot' }
+    {
+      id: 1,
+      text: "Hi! I'm here to help with your strategic planning questions. How can I assist you today?",
+      sender: 'bot'
+    }
   ])
   const [inputValue, setInputValue] = useState('')
 

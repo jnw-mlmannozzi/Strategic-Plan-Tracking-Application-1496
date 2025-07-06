@@ -19,7 +19,7 @@ const EmailConfirmation = () => {
         // Get the parameters from URL
         const urlParams = new URLSearchParams(location.search)
         const hashParams = new URLSearchParams(location.hash.substring(1))
-        
+
         // Check for various confirmation parameters
         const token = urlParams.get('token')
         const tokenHash = urlParams.get('token_hash')
@@ -29,14 +29,8 @@ const EmailConfirmation = () => {
         const type = urlParams.get('type') || hashParams.get('type')
 
         console.log('Email confirmation params:', {
-          token,
-          tokenHash,
-          confirmationCode,
-          accessToken,
-          refreshToken,
-          type,
-          search: location.search,
-          hash: location.hash
+          token, tokenHash, confirmationCode, accessToken, refreshToken, type,
+          search: location.search, hash: location.hash
         })
 
         // Handle different confirmation scenarios
@@ -58,9 +52,7 @@ const EmailConfirmation = () => {
             await createUserProfileIfNeeded(data.user)
             setStatus('success')
             setMessage('Email confirmed successfully! Redirecting to dashboard...')
-            setTimeout(() => {
-              navigate('/dashboard')
-            }, 2000)
+            setTimeout(() => { navigate('/dashboard') }, 2000)
           }
         } else if (tokenHash) {
           // Handle token_hash confirmation
@@ -80,9 +72,7 @@ const EmailConfirmation = () => {
             await createUserProfileIfNeeded(data.user)
             setStatus('success')
             setMessage('Email confirmed successfully! Redirecting to dashboard...')
-            setTimeout(() => {
-              navigate('/dashboard')
-            }, 2000)
+            setTimeout(() => { navigate('/dashboard') }, 2000)
           }
         } else if (confirmationCode) {
           // Handle code-based confirmation
@@ -102,9 +92,7 @@ const EmailConfirmation = () => {
             await createUserProfileIfNeeded(data.user)
             setStatus('success')
             setMessage('Email confirmed successfully! Redirecting to dashboard...')
-            setTimeout(() => {
-              navigate('/dashboard')
-            }, 2000)
+            setTimeout(() => { navigate('/dashboard') }, 2000)
           }
         } else if (type === 'signup' && accessToken && refreshToken) {
           // Handle direct session-based confirmation
@@ -124,9 +112,7 @@ const EmailConfirmation = () => {
             await createUserProfileIfNeeded(data.user)
             setStatus('success')
             setMessage('Email confirmed successfully! Redirecting to dashboard...')
-            setTimeout(() => {
-              navigate('/dashboard')
-            }, 2000)
+            setTimeout(() => { navigate('/dashboard') }, 2000)
           }
         } else {
           console.log('No valid confirmation parameters found')
@@ -166,7 +152,6 @@ const EmailConfirmation = () => {
           .single()
 
         let orgId
-
         if (existingOrg && !orgSelectError) {
           orgId = existingOrg.id
         } else {
@@ -221,9 +206,9 @@ const EmailConfirmation = () => {
         className="max-w-md w-full space-y-8"
       >
         <div className="text-center">
-          <img 
-            src="https://quest-media-storage-bucket.s3.us-east-2.amazonaws.com/1751668137997-StraetgyPilot%20logo.png"
-            alt="JNW Consulting"
+          <img
+            src="https://quest-media-storage-bucket.s3.us-east-2.amazonaws.com/1751739429877-StraetgyPilot.png"
+            alt="StrategyPilot"
             className="mx-auto h-12 w-auto"
           />
           <h2 className="mt-6 text-center text-3xl font-bold text-primary">

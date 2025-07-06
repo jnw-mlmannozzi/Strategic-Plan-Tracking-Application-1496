@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../contexts/AuthContext'
-import { supabase } from '../config/supabase'
+import { supabase } from '../lib/supabase'
 import SafeIcon from '../common/SafeIcon'
 import * as FiIcons from 'react-icons/fi'
 import stripePromise from '../config/stripe'
@@ -9,10 +9,12 @@ import stripePromise from '../config/stripe'
 const { FiCreditCard, FiCheckCircle, FiAlertCircle } = FiIcons
 
 const Subscription = () => {
-  const { user, organization, isAdmin } = useAuth()
+  const { user, organization, membership } = useAuth()
   const [subscription, setSubscription] = useState(null)
   const [loading, setLoading] = useState(true)
   const [processingPayment, setProcessingPayment] = useState(false)
+
+  const isAdmin = membership?.role === 'OrgAdmin'
 
   useEffect(() => {
     if (organization && isAdmin) {
@@ -25,13 +27,12 @@ const Subscription = () => {
   const fetchSubscription = async () => {
     try {
       const { data, error } = await supabase
-        .from('subscriptions')
+        .from('subscriptions_mt')
         .select('*')
         .eq('organization_id', organization.id)
         .single()
 
       if (error && error.code !== 'PGRST116') throw error
-      
       setSubscription(data)
     } catch (error) {
       console.error('Error fetching subscription:', error)
@@ -42,29 +43,10 @@ const Subscription = () => {
 
   const handleSubscribe = async (planType) => {
     setProcessingPayment(true)
-    
     try {
-      const stripe = await stripePromise
-      
-      // Create checkout session
-      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: {
-          planType,
-          organizationId: organization.id,
-          userId: user.id
-        }
-      })
-
-      if (error) throw error
-
-      // Redirect to Stripe Checkout
-      const result = await stripe.redirectToCheckout({
-        sessionId: data.sessionId
-      })
-
-      if (result.error) {
-        throw new Error(result.error.message)
-      }
+      // This would integrate with your Stripe checkout
+      console.log('Starting subscription for plan:', planType)
+      alert('Subscription feature coming soon! Please contact help@jnwconsulting.org')
     } catch (error) {
       console.error('Error creating subscription:', error)
       alert('Failed to create subscription. Please try again.')
@@ -206,7 +188,7 @@ const Subscription = () => {
                 <h3 className="text-2xl font-bold text-primary mb-2">{plan.name}</h3>
                 <div className="mb-4">
                   <span className="text-4xl font-bold text-primary">${plan.price}</span>
-                  <span className="text-secondary"> /{plan.interval}</span>
+                  <span className="text-secondary">/{plan.interval}</span>
                   {plan.billedAnnually && (
                     <p className="text-sm text-green-600 font-medium mt-1">{plan.savings}</p>
                   )}
@@ -224,117 +206,37 @@ const Subscription = () => {
 
               <button
                 onClick={() => handleSubscribe(plan.id)}
-                disabled={processingPayment || (subscription && subscription.stripe_plan_id === plan.id)}
+                disabled={processingPayment}
                 className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors ${
-                  subscription && subscription.stripe_plan_id === plan.id
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : plan.popular
+                  plan.popular
                     ? 'bg-primary text-white hover:bg-opacity-90'
                     : 'bg-gray-100 text-primary hover:bg-gray-200'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                {processingPayment ? (
-                  'Processing...'
-                ) : subscription && subscription.stripe_plan_id === plan.id ? (
-                  'Current Plan'
-                ) : subscription ? (
-                  'Switch Plan'
-                ) : (
-                  'Start Free Trial'
-                )}
+                {processingPayment ? 'Processing...' : 'Start Free Trial'}
               </button>
             </motion.div>
           ))}
         </div>
 
-        {/* Billing Information */}
+        {/* Contact for Nonprofit */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="mt-12 bg-white rounded-lg shadow-md p-6"
+          className="mt-12 bg-white rounded-lg shadow-md p-6 text-center"
         >
-          <h3 className="text-lg font-semibold text-primary mb-4">Billing Information</h3>
-          
-          {subscription ? (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-secondary mb-1">
-                    Payment Method
-                  </label>
-                  <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                    <SafeIcon icon={FiCreditCard} className="w-5 h-5 text-secondary" />
-                    <span className="text-secondary">
-                      **** **** **** {subscription.last4 || '****'}
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-secondary mb-1">
-                    Next Billing Date
-                  </label>
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <span className="text-secondary">
-                      {subscription.current_period_end 
-                        ? new Date(subscription.current_period_end).toLocaleDateString()
-                        : 'N/A'
-                      }
-                    </span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex gap-3">
-                <button className="px-4 py-2 bg-secondary text-white rounded-lg hover:bg-opacity-90 transition-colors">
-                  Update Payment Method
-                </button>
-                <button className="px-4 py-2 border border-gray-300 text-secondary rounded-lg hover:bg-gray-50 transition-colors">
-                  Download Invoice
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <SafeIcon icon={FiCreditCard} className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-secondary">
-                No active subscription. Choose a plan above to get started.
-              </p>
-            </div>
-          )}
-        </motion.div>
-
-        {/* FAQ */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-          className="mt-12 bg-white rounded-lg shadow-md p-6"
-        >
-          <h3 className="text-lg font-semibold text-primary mb-4">Frequently Asked Questions</h3>
-          
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-medium text-secondary mb-2">Can I cancel my subscription anytime?</h4>
-              <p className="text-gray-600 text-sm">
-                Yes, you can cancel your subscription at any time. Your access will continue until the end of your current billing period.
-              </p>
-            </div>
-            
-            <div>
-              <h4 className="font-medium text-secondary mb-2">What happens during the free trial?</h4>
-              <p className="text-gray-600 text-sm">
-                You get full access to all features for 7 days. Your card will only be charged after the trial period ends.
-              </p>
-            </div>
-            
-            <div>
-              <h4 className="font-medium text-secondary mb-2">How do I qualify for nonprofit pricing?</h4>
-              <p className="text-gray-600 text-sm">
-                Contact us at help@jnwconsulting.org with your nonprofit documentation for verification.
-              </p>
-            </div>
-          </div>
+          <h3 className="text-lg font-semibold text-primary mb-4">Need Help?</h3>
+          <p className="text-secondary mb-4">
+            For nonprofit pricing verification or any questions about our plans, contact our support team.
+          </p>
+          <a
+            href="mailto:help@jnwconsulting.org"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors"
+          >
+            <SafeIcon icon={FiCreditCard} className="w-5 h-5" />
+            Contact Support
+          </a>
         </motion.div>
       </div>
     </div>

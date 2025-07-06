@@ -36,13 +36,13 @@ const Dashboard = () => {
   const checkForPlans = async () => {
     try {
       const { data, error } = await supabase
-        .from('strategic_plans')
+        .from('strategic_plans_mt')
         .select('id')
         .eq('organization_id', organization.id)
         .limit(1)
 
       if (error) throw error
-      
+
       setHasPlans(data && data.length > 0)
     } catch (error) {
       console.error('Error checking for plans:', error)
@@ -236,62 +236,6 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Quick Start Guide for New Users */}
-        {!hasPlans && (
-          <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="bg-white rounded-lg shadow-md p-6 border-l-4 border-primary"
-            >
-              <div className="flex items-center mb-3">
-                <div className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">
-                  1
-                </div>
-                <h3 className="text-lg font-semibold text-primary">Create Plan</h3>
-              </div>
-              <p className="text-secondary text-sm">
-                Start by creating your strategic plan with a clear name and description.
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="bg-white rounded-lg shadow-md p-6 border-l-4 border-accent"
-            >
-              <div className="flex items-center mb-3">
-                <div className="bg-accent text-primary rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">
-                  2
-                </div>
-                <h3 className="text-lg font-semibold text-primary">Add Priorities</h3>
-              </div>
-              <p className="text-secondary text-sm">
-                Define 3-5 strategic priorities that align with your organization's goals.
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500"
-            >
-              <div className="flex items-center mb-3">
-                <div className="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">
-                  3
-                </div>
-                <h3 className="text-lg font-semibold text-primary">Track Progress</h3>
-              </div>
-              <p className="text-secondary text-sm">
-                Create objectives and action items, then watch your dashboard come alive with data.
-              </p>
-            </motion.div>
-          </div>
-        )}
-
         {/* Controls - Only show if user has plans */}
         {hasPlans && (
           <div className="mb-8 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
@@ -412,29 +356,6 @@ const Dashboard = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
-            <h3 className="text-lg font-semibold text-primary mb-4">Getting Started</h3>
-            <div className="space-y-3 text-sm">
-              <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${hasPlans ? 'bg-green-500' : 'bg-blue-500'}`}></div>
-                <span>Create your first strategic plan</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <span>Define strategic priorities</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                <span>Add action items with deadlines</span>
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
             className="bg-white rounded-lg shadow-md p-6"
           >
             <h3 className="text-lg font-semibold text-primary mb-4">Need Help?</h3>

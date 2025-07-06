@@ -86,6 +86,24 @@ const Support = () => {
     }
   ]
 
+  const quickStartGuide = [
+    {
+      title: "Create Plan",
+      description: "Start by creating your strategic plan with a clear name and description.",
+      step: 1
+    },
+    {
+      title: "Add Priorities",
+      description: "Define 3-5 strategic priorities that align with your organization's goals.",
+      step: 2
+    },
+    {
+      title: "Track Progress",
+      description: "Create objectives and action items, then watch your dashboard come alive with data.",
+      step: 3
+    }
+  ]
+
   const toggleFaq = (index) => {
     setExpandedFaq(expandedFaq === index ? null : index)
   }
@@ -116,8 +134,8 @@ const Support = () => {
             </div>
             <div className="flex items-center gap-2">
               <SafeIcon icon={FiMail} className="w-5 h-5" />
-              <a 
-                href="mailto:help@jnwconsulting.org" 
+              <a
+                href="mailto:help@jnwconsulting.org"
                 className="text-accent hover:text-white transition-colors font-medium"
               >
                 help@jnwconsulting.org
@@ -140,7 +158,6 @@ const Support = () => {
                 <SafeIcon icon={FiHelpCircle} className="w-6 h-6 text-primary" />
                 <h2 className="text-2xl font-bold text-primary">Frequently Asked Questions</h2>
               </div>
-
               <div className="space-y-4">
                 {faqs.map((faq, index) => (
                   <div key={index} className="border border-gray-200 rounded-lg">
@@ -149,9 +166,9 @@ const Support = () => {
                       className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
                     >
                       <span className="font-medium text-secondary">{faq.question}</span>
-                      <SafeIcon 
-                        icon={expandedFaq === index ? FiChevronUp : FiChevronDown} 
-                        className="w-5 h-5 text-secondary" 
+                      <SafeIcon
+                        icon={expandedFaq === index ? FiChevronUp : FiChevronDown}
+                        className="w-5 h-5 text-secondary"
                       />
                     </button>
                     {expandedFaq === index && (
@@ -176,6 +193,28 @@ const Support = () => {
                 <h2 className="text-2xl font-bold text-primary">Getting Started Guide</h2>
               </div>
 
+              {/* Quick Start Guide from Dashboard */}
+              <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                {quickStartGuide.map((tip, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className="bg-white rounded-lg shadow-md p-6 border-l-4 border-primary"
+                  >
+                    <div className="flex items-center mb-3">
+                      <div className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">
+                        {tip.step}
+                      </div>
+                      <h3 className="text-lg font-semibold text-primary">{tip.title}</h3>
+                    </div>
+                    <p className="text-secondary text-sm">{tip.description}</p>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Detailed Getting Started */}
               <div className="space-y-4">
                 {onboardingTips.map((tip, index) => (
                   <div key={index} className="flex gap-4">
@@ -203,19 +242,28 @@ const Support = () => {
             >
               <h3 className="text-lg font-semibold text-primary mb-4">Quick Links</h3>
               <div className="space-y-3">
-                <a href="#" className="block p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                <a
+                  href="#"
+                  className="block p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                >
                   <div className="flex items-center gap-2">
                     <SafeIcon icon={FiBook} className="w-4 h-4 text-primary" />
                     <span className="text-secondary">User Guide</span>
                   </div>
                 </a>
-                <a href="#" className="block p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                <a
+                  href="#"
+                  className="block p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                >
                   <div className="flex items-center gap-2">
                     <SafeIcon icon={FiMessageCircle} className="w-4 h-4 text-primary" />
                     <span className="text-secondary">Video Tutorials</span>
                   </div>
                 </a>
-                <a href="#" className="block p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                <a
+                  href="#"
+                  className="block p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                >
                   <div className="flex items-center gap-2">
                     <SafeIcon icon={FiHelpCircle} className="w-4 h-4 text-primary" />
                     <span className="text-secondary">Best Practices</span>
@@ -252,8 +300,7 @@ const Support = () => {
             >
               <h3 className="text-lg font-semibold text-primary mb-4">💡 Pro Tip</h3>
               <p className="text-secondary text-sm">
-                Use the AI chatbot in the bottom right corner for instant answers to common questions. 
-                It's available 24/7 and can help you get started quickly!
+                Use the AI chatbot in the bottom right corner for instant answers to common questions. It's available 24/7 and can help you get started quickly!
               </p>
             </motion.div>
           </div>

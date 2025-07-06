@@ -1,13 +1,15 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
+import { validatePassword } from '../utils/passwordPolicy'
 import { motion } from 'framer-motion'
 import SafeIcon from '../common/SafeIcon'
+import PasswordStrengthIndicator from '../components/common/PasswordStrengthIndicator'
 import * as FiIcons from 'react-icons/fi'
 
 const { FiMail, FiLock, FiUser, FiBuilding, FiAlertCircle, FiCheckCircle } = FiIcons
 
-const SignUp = () => {
+const EnhancedSignUp = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -19,6 +21,7 @@ const SignUp = () => {
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
+  const { signUp } = useAuth()
   const navigate = useNavigate()
 
   const handleChange = (e) => {
@@ -46,8 +49,10 @@ const SignUp = () => {
       return
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long')
+    // Password validation
+    const passwordValidation = validatePassword(formData.password)
+    if (!passwordValidation.isValid) {
+      setError(passwordValidation.errors.join('. '))
       return
     }
 
@@ -59,50 +64,23 @@ const SignUp = () => {
     setLoading(true)
 
     try {
-      console.log('Attempting to sign up:', { email: formData.email, name: formData.name })
+      const { error } = await signUp(
+        formData.email,
+        formData.password,
+        formData.name,
+        formData.organizationName
+      )
 
-      // Sign up the user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            name: formData.name,
-            organization_name: formData.organizationName
-          }
-        }
-      })
+      if (error) throw error
 
-      if (authError) {
-        console.error('Supabase auth error:', authError)
-        throw authError
-      }
-
-      console.log('Auth signup result:', authData)
-
-      if (authData.user) {
-        // Check if email confirmation is required
-        if (!authData.user.email_confirmed_at) {
-          setSuccess('Account created successfully! Please check your email and click the confirmation link to activate your account.')
-          // Show a link to sign in page
-          setTimeout(() => {
-            navigate('/login')
-          }, 5000)
-        } else {
-          // Email confirmation disabled, create profile and go to dashboard
-          await createUserProfile(authData.user, formData.name, formData.organizationName)
-          setSuccess('Account created successfully! Redirecting to dashboard...')
-          setTimeout(() => {
-            navigate('/dashboard')
-          }, 2000)
-        }
-      }
+      setSuccess('Account created successfully! You can now sign in.')
+      setTimeout(() => {
+        navigate('/login')
+      }, 2000)
     } catch (error) {
       console.error('Sign up error:', error)
       if (error.message.includes('User already registered')) {
         setError('An account with this email already exists. Please try signing in instead.')
-      } else if (error.message.includes('Password should be at least 6 characters')) {
-        setError('Password must be at least 6 characters long')
       } else if (error.message.includes('Invalid email')) {
         setError('Please enter a valid email address')
       } else {
@@ -110,67 +88,6 @@ const SignUp = () => {
       }
     } finally {
       setLoading(false)
-    }
-  }
-
-  const createUserProfile = async (user, name, organizationName) => {
-    try {
-      const domain = user.email.split('@')[1]
-
-      // Check if organization exists
-      const { data: existingOrg, error: orgSelectError } = await supabase
-        .from('organizations')
-        .select('id')
-        .eq('domain', domain)
-        .single()
-
-      let orgId
-      if (existingOrg && !orgSelectError) {
-        orgId = existingOrg.id
-        console.log('Using existing organization:', orgId)
-      } else {
-        // Create new organization
-        console.log('Creating new organization:', organizationName)
-        const { data: newOrg, error: orgError } = await supabase
-          .from('organizations')
-          .insert([{
-            name: organizationName,
-            domain: domain,
-            created_at: new Date().toISOString()
-          }])
-          .select()
-          .single()
-
-        if (orgError) {
-          console.error('Error creating organization:', orgError)
-          throw orgError
-        }
-
-        orgId = newOrg.id
-        console.log('Created new organization:', orgId)
-      }
-
-      // Create user profile
-      console.log('Creating user profile for:', user.id)
-      const { error: userError } = await supabase
-        .from('users')
-        .insert([{
-          id: user.id,
-          email: user.email,
-          name: name,
-          organization_id: orgId,
-          role: existingOrg ? 'user' : 'admin',
-          created_at: new Date().toISOString()
-        }])
-
-      if (userError) {
-        console.error('Error creating user profile:', userError)
-        // Don't throw here - the auth user was created successfully
-      } else {
-        console.log('User profile created successfully')
-      }
-    } catch (error) {
-      console.error('Error creating profile:', error)
     }
   }
 
@@ -189,7 +106,7 @@ const SignUp = () => {
             className="mx-auto h-12 w-auto"
           />
           <h2 className="mt-6 text-center text-3xl font-bold text-primary">
-            Create your account
+            Create your organization
           </h2>
           <p className="mt-2 text-center text-sm text-secondary">
             Or{' '}
@@ -255,7 +172,7 @@ const SignUp = () => {
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-secondary">
-                Email address
+                Work Email Address
               </label>
               <div className="mt-1 relative">
                 <input
@@ -266,10 +183,13 @@ const SignUp = () => {
                   value={formData.email}
                   onChange={handleChange}
                   className="appearance-none relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                  placeholder="Enter your email"
+                  placeholder="Enter your work email"
                 />
                 <SafeIcon icon={FiMail} className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
               </div>
+              <p className="mt-1 text-xs text-gray-500">
+                Use your work email. This will determine your organization domain.
+              </p>
             </div>
 
             <div>
@@ -285,10 +205,11 @@ const SignUp = () => {
                   value={formData.password}
                   onChange={handleChange}
                   className="appearance-none relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                  placeholder="Enter your password (min 6 characters)"
+                  placeholder="Create a strong password"
                 />
                 <SafeIcon icon={FiLock} className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
               </div>
+              <PasswordStrengthIndicator password={formData.password} />
             </div>
 
             <div>
@@ -317,12 +238,12 @@ const SignUp = () => {
               disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creating account...' : 'Create Account'}
+              {loading ? 'Creating organization...' : 'Create Organization'}
             </button>
           </div>
 
           <div className="text-xs text-gray-500 text-center">
-            By creating an account, you agree to our{' '}
+            By creating an organization, you agree to our{' '}
             <Link to="/terms" className="text-primary hover:text-opacity-80">
               Terms of Service
             </Link>{' '}
@@ -332,20 +253,9 @@ const SignUp = () => {
             </Link>
           </div>
         </form>
-
-        {success && (
-          <div className="text-center">
-            <p className="text-sm text-secondary mt-4">
-              Already have an account?{' '}
-              <Link to="/login" className="font-medium text-primary hover:text-opacity-80">
-                Sign in here
-              </Link>
-            </p>
-          </div>
-        )}
       </motion.div>
     </div>
   )
 }
 
-export default SignUp
+export default EnhancedSignUp
